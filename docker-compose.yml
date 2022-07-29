@@ -1,0 +1,48 @@
+version: '3.7'
+
+services:
+  web:
+    build: .
+    container_name: iabsproject_web
+    command: gunicorn iabsproject.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - ./app:/app/
+      - staticfiles:/app/static/
+    expose:
+      - 8000
+    env_file:
+      - ./.env
+    depends_on:
+      - db
+
+  db:
+    image: postgres
+    container_name: iabsproject_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=iabs_project
+      - POSTGRES_USER=iabs_project
+      - POSTGRES_PASSWORD=159D@B27fc
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=t-pedrohenrique@iabs.org.br
+      - PGADMIN_DEFAULT_PASSWORD=iabs@123
+    ports:
+      - "5050:80"
+
+  nginx:
+    build: ./nginx
+    container_name: iabsproject_nginx
+    volumes:
+      - staticfiles:/app/static/
+    ports:
+      - 8000:80
+    depends_on:
+      - web
+
+volumes:
+  postgres_data:
+  staticfiles:
